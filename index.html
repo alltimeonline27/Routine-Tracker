@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RoutineTracker</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#fe5286" />
+
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com/" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <meta name="theme-color" content="#fe5286">
+
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav aria-label="Main" class="app-nav hidden" id="appNav">
+    <div class="nav-container">
+      <div class="nav-logo" aria-label="App name">RoutineTracker</div>
+      <div class="nav-user">
+        <span id="currentUserLabel" class="user-chip" aria-live="polite"></span>
+        <button id="logoutBtn" class="btn-secondary btn-small" type="button" title="Switch user"><i
+            class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        <button id="viewRatingHistory" class="btn-secondary btn-small" type="button" title="View rating history"><i
+            class="fa-solid fa-star"></i> Ratings</button>
+      </div>
+      <button class="hamburger" aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle Menu" type="button">
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+      </button>
+      <ul id="nav-menu" class="nav-menu" role="menubar">
+        <li role="none"><a role="menuitem" href="#routine"><i class="fas fa-home" aria-hidden="true"></i> Home</a></li>
+        <li role="none"><a role="menuitem" href="#focus"><i class="fas fa-clock" aria-hidden="true"></i> Focus Timer</a>
+        </li>
+        <li role="none"><a role="menuitem" href="#graphs"><i class="fas fa-chart-line" aria-hidden="true"></i>
+            Progress</a></li>
+        <li role="none"><a role="menuitem" href="#rating"><i class="fas fa-star" aria-hidden="true"></i> Rate App</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="app-header hidden" id="appHeader">
+    <div class="header-content">
+      <h1 id="appTitle">Daily Routine Tracker</h1>
+      <p id="date" class="current-date" aria-live="polite"></p>
+
+      <div class="stats-grid" role="group" aria-label="Stats">
+        <div class="stat-box" aria-live="polite">
+          <i class="fas fa-fire" aria-hidden="true"></i>
+          <span id="streakDisplay">0</span>
+          <small>Day Streak</small>
+        </div>
+        <div class="stat-box" aria-live="polite">
+          <i class="fas fa-star" aria-hidden="true"></i>
+          <span id="pointsDisplay">0</span>
+          <small>Today</small>
+        </div>
+        <div class="stat-box" aria-live="polite">
+          <i class="fas fa-calendar-week" aria-hidden="true"></i>
+          <span id="weeklyPointsDisplay">0</span>
+          <small>This Week</small>
+        </div>
+        <div class="stat-box" aria-live="polite">
+          <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+          <span id="monthlyPointsDisplay">0</span>
+          <small>This Month</small>
+        </div>
+      </div>
+
+      <div id="achievementsDisplay" class="achievements" aria-live="polite"></div>
+      <p id="motivationQuote" class="motivation"></p>
+
+      <div class="action-buttons">
+        <button id="resetToday" class="btn-secondary" type="button"><i class="fas fa-redo"></i> Reset Today</button>
+        <button id="resetWeek" class="btn-secondary" type="button" title="Reset weekly points only"><i
+            class="fas fa-rotate"></i> Reset Week</button>
+        <button id="resetMonth" class="btn-secondary" type="button" title="Reset monthly points only"><i
+            class="fas fa-rotate"></i> Reset Month</button>
+        <button id="toggleDarkMode" class="btn-secondary" type="button" aria-pressed="false"><i class="fas fa-moon"></i>
+          Dark Mode</button>
+        <button id="exportCSV" class="btn-secondary" type="button"><i class="fas fa-download"></i> Export Data</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="hidden app-main">
+    <section id="routine" class="section" aria-labelledby="routine-title">
+      <div class="container">
+        <h2 id="routine-title"><i class="fas fa-tasks" aria-hidden="true"></i> Today's Tasks</h2>
+
+        <form id="taskForm" class="task-form" autocomplete="off" aria-label="Add task">
+          <label class="sr-only" for="taskInput">Task name</label>
+          <input id="taskInput" name="task" type="text" placeholder="Add a new task…" required />
+          <label class="sr-only" for="taskCategory">Category</label>
+          <select id="taskCategory" name="category" required>
+            <option value="">Category</option>
+            <option>Hackathon</option>
+            <option>College</option>
+            <option>PW Class</option>
+            <option>Market</option>
+            <option>YouTube/Web</option>
+            <option>Web</option>
+            <option>General</option>
+          </select>
+          <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Add</button>
+        </form>
+
+        <div class="category-filter" role="tablist" aria-label="Filter tasks by category">
+          <button class="filter-btn active" data-category="all" role="tab" aria-selected="true" type="button">All
+            Tasks</button>
+          <button class="filter-btn" data-category="Hackathon" role="tab" aria-selected="false"
+            type="button">Hackathon</button>
+          <button class="filter-btn" data-category="College" role="tab" aria-selected="false"
+            type="button">College</button>
+          <button class="filter-btn" data-category="PW Class" role="tab" aria-selected="false" type="button">PW
+            Class</button>
+        </div>
+
+        <ul id="taskList" class="task-list" aria-live="polite"></ul>
+
+        <div class="progress-section" aria-label="Today's progress">
+          <div class="progress-header">
+            <span>Today's Progress</span>
+            <span id="progressText">0% (0/0 tasks)</span>
+          </div>
+          <div id="progressContainer" class="progress-container" role="progressbar" aria-valuemin="0"
+            aria-valuemax="100" aria-valuenow="0">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="focus" class="section" aria-labelledby="focus-title">
+      <div class="container">
+        <h2 id="focus-title"><i class="fas fa-clock" aria-hidden="true"></i> Focus Timer</h2>
+        <div class="timer-container">
+          <div id="timer" class="timer-display" aria-live="polite">25:00</div>
+
+          <div class="timer-modes" role="group" aria-label="Timer modes">
+            <button class="mode-btn btn-secondary" data-mode="focus" type="button"><i class="fa-solid fa-bolt"></i>
+              Focus</button>
+            <button class="mode-btn btn-secondary" data-mode="short" type="button"><i
+                class="fa-solid fa-mug-saucer"></i> Short Break</button>
+            <button class="mode-btn btn-secondary" data-mode="long" type="button"><i class="fa-solid fa-leaf"></i> Long
+              Break</button>
+          </div>
+
+          <div class="timer-controls">
+            <button id="startStop" class="btn-primary" type="button"><i class="fas fa-play"></i> Start</button>
+            <button id="resetTimer" class="btn-secondary" type="button"><i class="fas fa-redo"></i> Reset</button>
+          </div>
+
+          <div class="timer-presets">
+            <button class="timer-preset" data-minutes="15" type="button">15 min</button>
+            <button class="timer-preset" data-minutes="25" type="button">25 min</button>
+            <button class="timer-preset" data-minutes="45" type="button">45 min</button>
+          </div>
+          <p class="timer-note">Allow notifications to get an alert when a session ends.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="graphs" class="section" aria-labelledby="graphs-title">
+      <div class="container">
+        <h2 id="graphs-title"><i class="fas fa-chart-line" aria-hidden="true"></i> Your Progress</h2>
+        <div class="chart-container">
+          <h3>Weekly Performance</h3>
+          <canvas id="weeklyChart" aria-label="Weekly completed tasks chart" role="img"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Monthly Trend</h3>
+          <canvas id="monthlyChart" aria-label="Monthly progress chart" role="img"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="rating" class="section" aria-labelledby="rating-title">
+      <div class="container">
+        <h2 id="rating-title"><i class="fas fa-star" aria-hidden="true"></i> Rate This App</h2>
+        <p>How would you rate your experience with this app?</p>
+        <div class="stars" role="radiogroup" aria-label="Rate between 1 and 5">
+          <button type="button" aria-label="1 star" class="star" data-star="1">&#9733;</button>
+          <button type="button" aria-label="2 stars" class="star" data-star="2">&#9733;</button>
+          <button type="button" aria-label="3 stars" class="star" data-star="3">&#9733;</button>
+          <button type="button" aria-label="4 stars" class="star" data-star="4">&#9733;</button>
+          <button type="button" aria-label="5 stars" class="star" data-star="5">&#9733;</button>
+        </div>
+        <p id="ratingMessage" class="rating-message" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <section id="auth" class="auth-screen">
+    <div class="auth-card">
+      <h1 class="auth-title"><i class="fa-solid fa-user-shield"></i> Sign in</h1>
+      <p class="auth-sub">Offline-only login (stored in your browser).</p>
+      <form id="authForm" class="auth-form" autocomplete="off">
+        <input id="authUsername" type="text" placeholder="Username" required />
+        <input id="authPassword" type="password" placeholder="Password" required />
+        <button type="submit" class="btn-primary auth-btn"><i class="fa-solid fa-arrow-right-to-bracket"></i>
+          Continue</button>
+      </form>
+
+      <details class="auth-details">
+        <summary>Manage saved users</summary>
+        <ul id="savedUsers" class="saved-users"></ul>
+        <button id="clearAllUsers" class="btn-secondary btn-small" type="button"><i class="fa-solid fa-trash"></i>
+          Remove all</button>
+      </details>
+
+      <p class="auth-note">No server. Data stays on this device. Use the same browser to keep your data.</p>
+    </div>
+  </section>
+
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+  <audio id="taskSound" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg">
+  </audio>
+  <audio id="timerSound" preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+  </audio>
+
+  <footer class="app-footer hidden" id="appFooter">
+    <div class="container">
+      <p>&copy; <span id="year"></span> RoutineTracker Made by Bhaskar. All rights reserved.</p>
+      <p class="app-version">Updated 2 September 2025</p>
+    </div>
+  </footer>
+
+  <div id="ratingHistoryModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <span id="closeRatingHistory" class="modal-close">&times;</span>
+      <h2>Rating History</h2>
+      <p id='averageRating'>Average Rating: N/A</p>
+      <div class="modal-controls">
+        <input type="text" id="ratingHistorySearch" placeholder="Search by rating or date..." />
+        <button id="sortByDate" class="btn-secondary">Sort by Date</button>
+        <button id="sortByRating" class="btn-secondary">Sort by Rating</button>
+        <button id="deleteRatingHistory" class="btn-danger">Delete All</button>
+      </div>
+      <table class="rating-history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Rating</th>
+            <th>Emoji</th>
+            <th>Comment</th>
+            <th>Edit</th>
+          </tr>
+        </thead>
+        <tbody id="ratingHistoryTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Register service worker for offline usage
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('Service Worker registered'))
+          .catch(err => console.error('SW registration failed', err));
+      });
+    }
+  </script>
+
+</body>
+
+</html>
